@@ -67,21 +67,28 @@ def get_vocabs():
 
 def add_vocabs(vocab_list:list, db:VocabDB):
     for vocab in vocab_list:
+        print(f"\n==============={vocab}==============\n")
         v = Vocab_Obj(vocab)
-        
-        if db.check_vocab_exist(v.vocab) is not None:
-            
+        existing = db.check_vocab_exist(v.vocab)
+        if existing is None:
+            v.pos = get_pos(vocab)
+            v.chinese = get_chinese(vocab)
+            v.familiarity = get_familiarity(vocab)
+            v.print_info()
             db.insert_vocab("not2000", v.vocab, v.pos, v.chinese, v.familiarity)
         else:
-            print("Vocabulary already exists in databse:")
-            print(db.check_vocab_exist(vocab))
+            print("Vocabulary already exists in database:")
+            id, vocab_type, vocab, v.pos, v.chinese, v.familiarity = existing #pass in current information
+            v.print_info()
             update = input("Do you wish to update it? (Y/N)")
             if update == "Y":
-                pos = get_pos(vocab)
-                chinese = get_chinese(vocab)
-                familiarity = get_familiarity(vocab)
-                db.update_vocab(vocab, pos, chinese, familiarity)
-
+                v.pos = get_pos(vocab)
+                v.chinese = get_chinese(vocab)
+                v.familiarity = get_familiarity(vocab)
+                print("Update Entry:")
+                v.print_info()
+                db.update_vocab(vocab, v.pos, v.chinese, v.familiarity)
+    
 def main():
     db = VocabDB(DATABASE_PATH)
     vocab_list = get_vocabs()
