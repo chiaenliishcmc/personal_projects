@@ -4,6 +4,11 @@ class VocabDB:
     def __init__(self, db_path):
         self.conn = sqlite3.connect(db_path)
         self.cursor = self.conn.cursor()
+        
+        query = "SELECT MAX(ID) FROM vocabulary_main"
+        self.cursor.execute(query)
+        row = self.cursor.fetchone()
+        self.max_id = int(row[0]) if row[0] is not None else 0
 
     def close(self):
         self.conn.close()
@@ -14,12 +19,10 @@ class VocabDB:
         self.cursor.execute(query, (vocab,))
         return self.cursor.fetchone()
 
-    def get_max_id(self):
+    def get_new_id(self):
         """Get the maximum ID in the 'vocabulary_main' table."""
-        query = "SELECT MAX(ID) FROM vocabulary_main"
-        self.cursor.execute(query)
-        row = self.cursor.fetchone()
-        return int(row[0]) if row[0] is not None else 0
+        self.max_id += 1
+        return self.max_id
 
     def update_vocab(self, vocab, pos, chinese, familiarity):
         """Update the row that matches `vocab` with new data."""
@@ -31,7 +34,7 @@ class VocabDB:
 
     def insert_vocab(self, vocab_type, vocab, pos, chinese, familiarity):
         """Insert a new vocab into the database."""
-        new_id = self.get_max_id() + 1
+        new_id = self.get_new_id()
         insert_query = """INSERT INTO vocabulary_main
                           (ID, vocab_type, vocab, part_of_speech, chinese, familiarity)
                           VALUES (?, ?, ?, ?, ?, ?)"""
